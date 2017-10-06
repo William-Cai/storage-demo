@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Storage 操作</title>
+</head>
+<body>
+<h1>Web Storage 示例</h1>
+<h5><p>1、同一浏览器打开了两个同源页面,其中一个页面修改了localStorage,另一个网页注册了这个事件</p>
+    <p>2、同一个页面下触发不了storage事件</p>
+    <p>3、在IE9里发现一个问题,相同的key,不管你value是否与之前一样,都会触发storage事件,
+        而firefox中不会,只有当value与之前不同时,才会触发。
+    </p>
+</h5>
+<button onclick="clearStorage('')">清空所有</button>
+<p id="list"></p>
+<p id="msg"></p>
+
+
+<h2>localStorage 操作</h2>
+key:<input type="text" id="key">&nbsp;-&nbsp;value:<input type="text" id="value">
+<button onclick="saveStorage('local')">保存</button>
+<button onclick="clearStorage('local')">清除</button>
+
+
+<h2>SessionStorage 操作</h2>
+key:<input type="text" id="key2">&nbsp;-&nbsp;value:<input type="text" id="value2">
+<button onclick="saveStorage('session')">保存</button>
+<button onclick="clearStorage('session')">清除</button>
+
+
+<script>
+    // init
+    getStorageList();
+
+    function saveStorage(type) {
+        switch (type) {
+            case 'local':
+                let key = document.querySelector('#key').value;
+                let value = document.querySelector('#value').value;
+                // localStorage[key] = value
+                localStorage.setItem(key, value)
+                break;
+            case 'session':
+                let key2 = document.querySelector('#key2').value;
+                let value2 = document.querySelector('#value2').value;
+                // sessionStorage[key] = value
+                sessionStorage.setItem(key2, value2)
+                break;
+            default:
+                alert('选择保存的位置：session or local')
+        }
+    }
+
+    function getStorageList() {
+        let result = 'localStorage: <br> '
+        for (let i = 0, len = localStorage.length; i < len; i++) {
+            let key = localStorage.key(i)
+            // let value = localStorage[key];
+            let value = localStorage.getItem(key);
+            result += `key: ${key} - value:${value} <br> `
+        }
+
+        result += '=================== <br> '
+        result += 'sessionStorage: <br> '
+        for (let i = 0, len = sessionStorage.length; i < len; i++) {
+            let key = sessionStorage.key(i)
+            // let value = sessionStorage[key];
+            let value = sessionStorage.getItem(key);
+            result += `key: ${key} - value:${value} <br> `
+        }
+
+
+        document.querySelector('#list').innerHTML = result;
+    }
+
+    /**
+     * 清除local 和 session 中的所有键值对
+     */
+    function clearStorage(type) {
+        switch (type) {
+            case 'local':
+                let key = document.querySelector('#key').value;
+                localStorage.removeItem(key);
+                break;
+            case 'session':
+                let key2 = document.querySelector('#key2').value;
+                localStorage.removeItem(key2);
+                break;
+            default:
+                localStorage.clear()
+                sessionStorage.clear();
+        }
+    }
+
+    /**
+     * 监听 Web Storage数据的变更
+     *
+     * 1、同一浏览器打开了两个同源页面,其中一个页面修改了localStorage,另一个网页注册了这个事件
+     *
+     * 2、同一个页面下触发不了storage事件
+     * 3、在IE9里发现一个问题,相同的key,不管你value是否与之前一样,都会触发storage事件,
+     *   而firefox中不会,只有当value与之前不同时,才会触发。
+     */
+    window.addEventListener('storage', showMessage, false);
+
+
+    function showMessage(e) {
+        let msg = document.querySelector('#msg')
+        msg.innerHTML = `修改${e.key}
+                原来的值为:${e.oldValue}
+                新的值为：${e.newValue}
+                修改的页面为：${e.url}
+                修改的位置：${+e.storageArea}`
+
+        switch (e.storageArea) {
+            case 'session':
+                document.querySelector('#key2').value = '';
+                document.querySelector('#value2').value = '';
+                break;
+            case 'local':
+                document.querySelector('#key').value = '';
+                document.querySelector('#value').value = '';
+                break;
+        }
+        getStorageList();
+    }
+</script>
+</body>
+</html>
